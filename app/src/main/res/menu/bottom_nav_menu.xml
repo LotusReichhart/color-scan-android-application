@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_scan"
+        android:icon="@drawable/ic_scan"
+        android:title="SCAN" />
+    <item
+        android:id="@+id/nav_manual"
+        android:icon="@drawable/ic_manual"
+        android:title="MANUAL" />
+    <item
+        android:id="@+id/nav_history"
+        android:icon="@drawable/ic_clipboard_history"
+        android:title="HISTORY" />
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="SETTINGS" />
+</menu>

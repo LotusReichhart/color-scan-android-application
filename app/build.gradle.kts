@@ -1,27 +1,60 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.lotusreichhart.colorscan"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.lotusreichhart.colorscan"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "BANNER_AD_ID",
+            "\"ca-app-pub-3940256099942544/6300978111\""
+        )
+        buildConfigField(
+            "String",
+            "INTERSTITIAL_AD_ID",
+            "\"ca-app-pub-3940256099942544/1033173712\""
+        )
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField(
+                "String",
+                "BANNER_AD_ID",
+                "\"ca-app-pub-3940256099942544/6300978111\""
+            )
+            buildConfigField(
+                "String",
+                "INTERSTITIAL_AD_ID",
+                "\"ca-app-pub-3940256099942544/1033173712\""
+            )
+        }
         release {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-5834661651760052~2162787575"
+            buildConfigField(
+                "String",
+                "BANNER_AD_ID",
+                "\"ca-app-pub-5834661651760052/4273377370\""
+            )
+            buildConfigField(
+                "String",
+                "INTERSTITIAL_AD_ID",
+                "\"ca-app-pub-5834661651760052/5915585932\""
+            )
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -29,9 +62,15 @@ android {
             )
         }
     }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
@@ -40,7 +79,19 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.material)
+
+    implementation(libs.play.services.ads)
+    implementation(libs.gson)
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
