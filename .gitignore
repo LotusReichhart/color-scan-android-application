@@ -1,15 +1,50 @@
+# Gradle and Build artifacts
+.gradle/
+build/
+**/build/
+bin/
+**/bin/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.flat
+
+# IntelliJ IDEA / Android Studio
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+*.iws
+*.ipr
+out/
+
+# Local configuration
 local.properties
+.DS_Store
+Thumbs.db
+
+# Signing files (Keystores)
+*.jks
+*.keystore
+*.p12
+*.jceks
+signing/
+
+# Project specific exclusions
+app/google-services.json
+app/release/
+app/keystore/*
+!app/keystore/
+!app/keystore/.gitkeep
+
+# Temporary files
+temps/
+*.log
+*.tmp
+*.bak
+*.swp
+
+docs

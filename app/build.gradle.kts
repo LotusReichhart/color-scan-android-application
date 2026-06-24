@@ -26,6 +26,11 @@ android {
             "INTERSTITIAL_AD_ID",
             "\"ca-app-pub-3940256099942544/1033173712\""
         )
+        buildConfigField(
+            "String",
+            "APP_OPEN_AD_ID",
+            "\"ca-app-pub-3940256099942544/9257395921\""
+        )
     }
 
     buildTypes {
@@ -41,6 +46,11 @@ android {
                 "INTERSTITIAL_AD_ID",
                 "\"ca-app-pub-3940256099942544/1033173712\""
             )
+            buildConfigField(
+                "String",
+                "APP_OPEN_AD_ID",
+                "\"ca-app-pub-3940256099942544/9257395921\""
+            )
         }
         release {
             manifestPlaceholders["admobAppId"] = "ca-app-pub-5834661651760052~2162787575"
@@ -53,6 +63,11 @@ android {
                 "String",
                 "INTERSTITIAL_AD_ID",
                 "\"ca-app-pub-5834661651760052/5915585932\""
+            )
+            buildConfigField(
+                "String",
+                "APP_OPEN_AD_ID",
+                "\"ca-app-pub-5834661651760052/2992009319\""
             )
 
             isMinifyEnabled = false
@@ -84,6 +99,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.material)
+    implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.play.services.ads)
     implementation(libs.gson)
@@ -91,6 +107,13 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.timber)
+
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

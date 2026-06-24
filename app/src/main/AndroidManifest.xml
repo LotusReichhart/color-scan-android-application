@@ -5,7 +5,7 @@
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="false" />
+        android:required="true" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -21,14 +21,25 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ColorScan">
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".feature.onboarding.OnboardingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".feature.splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.Starting"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

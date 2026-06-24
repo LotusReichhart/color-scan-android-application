@@ -1,5 +1,18 @@
 <resources>
-    <string name="app_name">ColorScan</string>
+    <string name="app_name">Color Scan</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="onboarding_title_1">INSTANT DETECTION</string>
+    <string name="onboarding_desc_1">Point your camera at any material surface to instantly extract its exact HEX, RGB, and localized name.</string>
+    <string name="onboarding_title_2">COLOR SPECIFICATION</string>
+    <string name="onboarding_desc_2">Every scanned shade is broken down to its precise HEX code, RGB values, and internationally recognized color name.</string>
+    <string name="onboarding_title_3">PRESERVE PALETTES</string>
+    <string name="onboarding_desc_3">Your scanned colors are saved automatically. Build, browse, and export your personal color library anytime.</string>
+
+    <string name="onboarding_next">NEXT</string>
+    <string name="onboarding_get_started">GET STARTED</string>
 </resources>

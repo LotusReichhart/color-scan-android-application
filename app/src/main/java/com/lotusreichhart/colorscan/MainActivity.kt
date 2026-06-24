@@ -3,6 +3,7 @@ package com.lotusreichhart.colorscan
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.enableEdgeToEdge
@@ -39,6 +40,13 @@ class MainActivity : AppCompatActivity() {
             }
             showFragment(fragment)
             true
+        }
+
+        val menuView = binding.bottomNavigation.getChildAt(0) as? ViewGroup
+        if (menuView != null) {
+            for (i in 0 until menuView.childCount) {
+                menuView.getChildAt(i).setOnLongClickListener { true }
+            }
         }
     }
 

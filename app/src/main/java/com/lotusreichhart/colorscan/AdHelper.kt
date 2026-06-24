@@ -9,11 +9,14 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.appopen.AppOpenAd
 
 object AdHelper {
 
     private var mInterstitialAd: InterstitialAd? = null
     private var isAdLoading = false
+    private var mAppOpenAd: AppOpenAd? = null
+    private var isAppOpenAdLoading = false
 
     fun loadBannerAd(container: android.view.ViewGroup) {
         val context = container.context
@@ -26,9 +29,6 @@ object AdHelper {
         adView.loadAd(adRequest)
     }
 
-    /**
-     * Tải trước (preload) Interstitial Ad để tránh bị trễ khi hiển thị.
-     */
     fun preloadInterstitialAd(context: Context) {
         if (mInterstitialAd != null || isAdLoading) return
 
@@ -53,18 +53,12 @@ object AdHelper {
         )
     }
 
-    /**
-     * Hiển thị quảng cáo kẽ (Interstitial Ad).
-     * @param activity Hoạt động hiện tại để làm context hiển thị quảng cáo.
-     * @param onAdDismissed Sự kiện chạy khi quảng cáo đóng lại hoặc tải lỗi, để luồng code chính tiếp tục chạy.
-     */
     fun showInterstitialAd(activity: Activity, onAdDismissed: () -> Unit) {
         val ad = mInterstitialAd
         if (ad != null) {
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     mInterstitialAd = null
-                    // Tải trước cái mới cho lần sau
                     preloadInterstitialAd(activity)
                     onAdDismissed()
                 }
@@ -76,9 +70,55 @@ object AdHelper {
             }
             ad.show(activity)
         } else {
-            // Nếu chưa tải xong quảng cáo kẽ, chạy tiếp luồng chính của app và thử load lại quảng cáo kẽ
             preloadInterstitialAd(activity)
             onAdDismissed()
         }
     }
+
+    fun loadAppOpenAd(context: Context) {
+        if (mAppOpenAd != null || isAppOpenAdLoading) return
+
+        isAppOpenAdLoading = true
+        val request = AdRequest.Builder().build()
+        AppOpenAd.load(
+            context.applicationContext,
+            BuildConfig.APP_OPEN_AD_ID,
+            request,
+            object : AppOpenAd.AppOpenAdLoadCallback() {
+                override fun onAdLoaded(ad: AppOpenAd) {
+                    mAppOpenAd = ad
+                    isAppOpenAdLoading = false
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    mAppOpenAd = null
+                    isAppOpenAdLoading = false
+                }
+            }
+        )
+    }
+
+    fun showAppOpenAd(activity: Activity, onAdDismissed: () -> Unit) {
+        val ad = mAppOpenAd
+        if (ad != null) {
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    mAppOpenAd = null
+                    onAdDismissed()
+                }
+
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                    mAppOpenAd = null
+                    onAdDismissed()
+                }
+            }
+            ad.show(activity)
+        } else {
+            onAdDismissed()
+        }
+    }
+
+    fun isAppOpenAdLoading(): Boolean = isAppOpenAdLoading
+
+    fun getAppOpenAd(): AppOpenAd? = mAppOpenAd
 }

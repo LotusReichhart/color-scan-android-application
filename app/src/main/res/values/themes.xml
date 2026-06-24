@@ -1,9 +1,19 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ColorScan" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:fontFamily">@font/puritan</item>
-        <item name="fontFamily">@font/puritan</item>
+
     </style>
 
     <style name="Theme.ColorScan" parent="Base.Theme.ColorScan" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0C0C0C</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.ColorScan</item>
+    </style>
+
+    <style name="ThemeOverlay.ColorScan.FullscreenContainer" parent="">
+        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
+        <item name="fullscreenTextColor">@color/light_blue_A200</item>
+    </style>
 </resources>
