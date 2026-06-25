@@ -7,7 +7,7 @@
     android:viewportHeight="100"
     tools:ignore="VectorRaster">
     <path
-        android:strokeColor="#4E4E4E"
+        android:strokeColor="#ff4500"
         android:strokeWidth="1"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"

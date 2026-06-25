@@ -4,8 +4,16 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+    <!-- Viền đen tương phản bên dưới -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M12,4 L12,20 M4,12 L20,12" />
+    <!-- Thân dấu cộng màu trắng đè lên trên -->
     <path
         android:strokeColor="#FFFFFF"
         android:strokeWidth="2"
+        android:strokeLineCap="round"
         android:pathData="M12,4 L12,20 M4,12 L20,12" />
 </vector>

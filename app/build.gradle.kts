@@ -52,6 +52,26 @@ android {
                 "\"ca-app-pub-3940256099942544/9257395921\""
             )
         }
+        create("closedTest") {
+            initWith(getByName("release"))
+            matchingFallbacks.add("release")
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField(
+                "String",
+                "BANNER_AD_ID",
+                "\"ca-app-pub-3940256099942544/6300978111\""
+            )
+            buildConfigField(
+                "String",
+                "INTERSTITIAL_AD_ID",
+                "\"ca-app-pub-3940256099942544/1033173712\""
+            )
+            buildConfigField(
+                "String",
+                "APP_OPEN_AD_ID",
+                "\"ca-app-pub-3940256099942544/9257395921\""
+            )
+        }
         release {
             manifestPlaceholders["admobAppId"] = "ca-app-pub-5834661651760052~2162787575"
             buildConfigField(
