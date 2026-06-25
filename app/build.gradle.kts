@@ -1,7 +1,23 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.devtools.ksp")
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+val releaseAdmobAppId = localProperties.getProperty("release.admob.app.id") ?: "ca-app-pub-3940256099942544~3347511713"
+val releaseBannerAdId = localProperties.getProperty("release.banner.ad.id") ?: "ca-app-pub-3940256099942544/6300978111"
+val releaseInterstitialAdId = localProperties.getProperty("release.interstitial.ad.id") ?: "ca-app-pub-3940256099942544/1033173712"
+val releaseAppOpenAdId = localProperties.getProperty("release.app-open.ad.id") ?: "ca-app-pub-3940256099942544/9257395921"
+val privacyPolicyUrl = localProperties.getProperty("privacy.policy.url") ?: "https://www.google.com"
+val termsOfServiceUrl = localProperties.getProperty("terms.of.service.url") ?: "https://www.google.com"
 
 android {
     namespace = "com.lotusreichhart.colorscan"
@@ -30,6 +46,16 @@ android {
             "String",
             "APP_OPEN_AD_ID",
             "\"ca-app-pub-3940256099942544/9257395921\""
+        )
+        buildConfigField(
+            "String",
+            "PRIVACY_POLICY_URL",
+            "\"$privacyPolicyUrl\""
+        )
+        buildConfigField(
+            "String",
+            "TERMS_OF_SERVICE_URL",
+            "\"$termsOfServiceUrl\""
         )
     }
 
@@ -73,21 +99,21 @@ android {
             )
         }
         release {
-            manifestPlaceholders["admobAppId"] = "ca-app-pub-5834661651760052~2162787575"
+            manifestPlaceholders["admobAppId"] = releaseAdmobAppId
             buildConfigField(
                 "String",
                 "BANNER_AD_ID",
-                "\"ca-app-pub-5834661651760052/4273377370\""
+                "\"$releaseBannerAdId\""
             )
             buildConfigField(
                 "String",
                 "INTERSTITIAL_AD_ID",
-                "\"ca-app-pub-5834661651760052/5915585932\""
+                "\"$releaseInterstitialAdId\""
             )
             buildConfigField(
                 "String",
                 "APP_OPEN_AD_ID",
-                "\"ca-app-pub-5834661651760052/2992009319\""
+                "\"$releaseAppOpenAdId\""
             )
 
             isMinifyEnabled = false
@@ -122,6 +148,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.play.services.ads)
+    implementation("com.android.billingclient:billing-ktx:6.2.1")
     implementation(libs.gson)
 
     implementation(libs.androidx.room.runtime)

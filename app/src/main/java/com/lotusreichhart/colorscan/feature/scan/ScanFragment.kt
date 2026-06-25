@@ -2,8 +2,11 @@ package com.lotusreichhart.colorscan.feature.scan
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,18 +43,17 @@ class ScanFragment : Fragment() {
     private val binding get() = _binding!!
     private var camera: Camera? = null
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private var hasRequestedPermission = false
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        hasRequestedPermission = true
         if (isGranted) {
+            binding.layoutPermissionDenied.visibility = View.GONE
             startCamera()
         } else {
-            Toast.makeText(
-                requireContext(),
-                "Camera permission is required to scan colors.",
-                Toast.LENGTH_SHORT
-            ).show()
+            checkCameraPermissionState()
         }
     }
 
@@ -155,6 +157,7 @@ class ScanFragment : Fragment() {
         }
 
         if (allPermissionsGranted()) {
+            binding.layoutPermissionDenied.visibility = View.GONE
             startCamera()
         } else {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -257,6 +260,48 @@ class ScanFragment : Fragment() {
         val clip = android.content.ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(requireContext(), "$label copied: $text", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (allPermissionsGranted()) {
+            binding.layoutPermissionDenied.visibility = View.GONE
+            startCamera()
+        } else if (hasRequestedPermission) {
+            checkCameraPermissionState()
+        }
+    }
+
+    private fun checkCameraPermissionState() {
+        if (allPermissionsGranted()) {
+            binding.layoutPermissionDenied.visibility = View.GONE
+            startCamera()
+        } else {
+            binding.layoutPermissionDenied.visibility = View.VISIBLE
+            val showRationale = shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+            if (showRationale) {
+                binding.btnPermissionAction.text = "GRANT PERMISSION"
+                binding.btnPermissionAction.setOnClickListener {
+                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            } else {
+                binding.btnPermissionAction.text = "GO TO SETTINGS"
+                binding.btnPermissionAction.setOnClickListener {
+                    openAppSettings()
+                }
+            }
+        }
+    }
+
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", requireContext().packageName, null)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to open app settings")
+        }
     }
 
     override fun onDestroyView() {

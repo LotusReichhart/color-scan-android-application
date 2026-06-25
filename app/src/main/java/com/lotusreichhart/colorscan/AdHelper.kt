@@ -22,6 +22,12 @@ object AdHelper {
 
     fun loadBannerAd(container: android.view.ViewGroup) {
         val context = container.context
+        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(context)
+        if (billingManager.isProUser.value) {
+            container.visibility = android.view.View.GONE
+            return
+        }
+        container.visibility = android.view.View.VISIBLE
         val adView = AdView(context)
         adView.adUnitId = BuildConfig.BANNER_AD_ID
         adView.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
@@ -32,6 +38,8 @@ object AdHelper {
     }
 
     fun preloadInterstitialAd(context: Context) {
+        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(context)
+        if (billingManager.isProUser.value) return
         if (mInterstitialAd != null || isAdLoading) return
 
         isAdLoading = true
@@ -56,6 +64,11 @@ object AdHelper {
     }
 
     fun showInterstitialAd(activity: Activity, onAdDismissed: () -> Unit) {
+        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(activity)
+        if (billingManager.isProUser.value) {
+            onAdDismissed()
+            return
+        }
         val currentTime = System.currentTimeMillis()
         val ad = mInterstitialAd
         if (ad != null && (currentTime - mLastAdShowTime >= MIN_SHOW_INTERVAL)) {
@@ -82,6 +95,8 @@ object AdHelper {
     }
 
     fun loadAppOpenAd(context: Context) {
+        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(context)
+        if (billingManager.isProUser.value) return
         if (mAppOpenAd != null || isAppOpenAdLoading) return
 
         isAppOpenAdLoading = true
@@ -105,6 +120,11 @@ object AdHelper {
     }
 
     fun showAppOpenAd(activity: Activity, onAdDismissed: () -> Unit) {
+        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(activity)
+        if (billingManager.isProUser.value) {
+            onAdDismissed()
+            return
+        }
         val ad = mAppOpenAd
         if (ad != null) {
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {

@@ -229,4 +229,59 @@
             android:src="@drawable/ic_zoom_in" />
     </LinearLayout>
 
+    <!-- Permission Denied Layout -->
+    <LinearLayout
+        android:id="@+id/layoutPermissionDenied"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0C0C0C"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/puritan_bold"
+            android:gravity="center"
+            android:text="CAMERA PERMISSION REQUIRED"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:fontFamily="@font/roboto_mono_regular"
+            android:gravity="center"
+            android:text="Color Scan requires camera access to detect and scan colors in real time. Please enable camera permission in app settings."
+            android:textColor="#8E8E93"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPermissionAction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GO TO SETTINGS"
+            android:textColor="#0C0C0C"
+            android:textStyle="bold"
+            app:backgroundTint="#FFB300"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
