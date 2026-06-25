@@ -90,10 +90,23 @@ class ScanFragment : Fragment() {
             popup.menu.add(0, 3, 0, "Copy RGB")
             popup.setOnMenuItemClickListener { item ->
                 val state = viewModel.uiState.value
-                when (item.itemId) {
-                    1 -> copyToClipboard("Name", state.colorName)
-                    2 -> copyToClipboard("HEX", state.colorHex)
-                    3 -> copyToClipboard("RGB", state.colorRgb)
+                val copied = when (item.itemId) {
+                    1 -> {
+                        copyToClipboard("Name", state.colorName)
+                        true
+                    }
+                    2 -> {
+                        copyToClipboard("HEX", state.colorHex)
+                        true
+                    }
+                    3 -> {
+                        copyToClipboard("RGB", state.colorRgb)
+                        true
+                    }
+                    else -> false
+                }
+                if (copied) {
+                    viewModel.onEvent(ScanUiEvent.SaveColor)
                 }
                 true
             }

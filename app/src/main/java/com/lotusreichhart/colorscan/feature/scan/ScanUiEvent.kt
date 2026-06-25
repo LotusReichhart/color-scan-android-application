@@ -5,4 +5,5 @@ sealed interface ScanUiEvent {
     data object ToggleFlash : ScanUiEvent
     data object ZoomIn : ScanUiEvent
     data object ZoomOut : ScanUiEvent
+    data object SaveColor : ScanUiEvent
 }
