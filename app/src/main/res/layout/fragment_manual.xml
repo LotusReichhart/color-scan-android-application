@@ -1,13 +1,520 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0A0A0A"
     tools:context=".feature.manual.ManualFragment">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Manual Fragment" />
+        android:orientation="vertical">
+
+        <!-- Title Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/puritan_bold"
+            android:gravity="center"
+            android:text="MANUAL ENTRY"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Search Bar -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_search_input">
+
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="50dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/roboto_mono_regular"
+                android:hint="Enter name, HEX, or RGB (e.g. 3498DB)"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingStart="16dp"
+                android:paddingEnd="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#5E5E62"
+                android:textSize="15sp"
+                app:fontFamily="@font/roboto_mono_regular" />
+
+            <ImageView
+                android:id="@+id/ivSearchIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_search"
+                app:tint="#8E8E93" />
+
+        </FrameLayout>
+
+        <!-- Main Content Area -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- Empty State -->
+            <TextView
+                android:id="@+id/tvEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="24dp"
+                android:fontFamily="@font/puritan_regular"
+                android:gravity="center"
+                android:text="Enter color name, HEX or RGB code to start."
+                android:textColor="#8E8E93"
+                android:textSize="20sp"
+                android:visibility="visible" />
+
+            <!-- No Results State -->
+            <TextView
+                android:id="@+id/tvNoResultsState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="24dp"
+                android:fontFamily="@font/puritan_regular"
+                android:gravity="center"
+                android:text="No colors found."
+                android:textColor="#FF4500"
+                android:textSize="15sp"
+                android:visibility="gone" />
+
+            <!-- Results Scroll View -->
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nsvResults"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Active Color Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardActiveColor"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
+                        app:strokeWidth="0dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="20dp">
+
+                            <TextView
+                                android:id="@+id/tvActiveColorName"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:ellipsize="end"
+                                android:fontFamily="@font/puritan_bold"
+                                android:maxLines="2"
+                                android:textColor="#000000"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                app:layout_constraintBottom_toTopOf="@id/tvActiveColorHex"
+                                app:layout_constraintEnd_toStartOf="@id/btnCopyActiveColor"
+                                app:layout_constraintHorizontal_bias="0.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_chainStyle="packed" />
+
+                            <TextView
+                                android:id="@+id/tvActiveColorHex"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:fontFamily="@font/roboto_mono_regular"
+                                android:textColor="#333333"
+                                android:textSize="14sp"
+                                app:fontFamily="@font/roboto_mono_regular"
+                                app:layout_constraintBottom_toTopOf="@id/tvActiveColorRgb"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvActiveColorName" />
+
+                            <TextView
+                                android:id="@+id/tvActiveColorRgb"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/roboto_mono_regular"
+                                android:textColor="#333333"
+                                android:textSize="14sp"
+                                app:fontFamily="@font/roboto_mono_regular"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvActiveColorHex" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/btnCopyActiveColor"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                app:cardBackgroundColor="#22000000"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:strokeWidth="0dp">
+
+                                <ImageView
+                                    android:id="@+id/ivCopyActiveIcon"
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_copy"
+                                    app:tint="#000000" />
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Complementary Match Section -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:fontFamily="@font/puritan_bold"
+                        android:text="COMPLEMENTARY MATCH"
+                        android:textColor="#8E8E93"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <!-- Source Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardComplementSource"
+                            android:layout_width="0dp"
+                            android:layout_height="110dp"
+                            android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:padding="12dp">
+
+                                <TextView
+                                    android:id="@+id/tvComplementSourceLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/puritan_bold"
+                                    android:text="SOURCE"
+                                    android:textColor="#333333"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvComplementSourceName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:ellipsize="end"
+                                    android:fontFamily="@font/puritan_bold"
+                                    android:maxLines="1"
+                                    android:textColor="#000000"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvComplementSourceHex"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="11sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                                <TextView
+                                    android:id="@+id/tvComplementSourceRgb"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="11sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                            </LinearLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Complement Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardComplementTarget"
+                            android:layout_width="0dp"
+                            android:layout_height="110dp"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:padding="12dp">
+
+                                <TextView
+                                    android:id="@+id/tvComplementTargetLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/puritan_bold"
+                                    android:text="COMPLEMENT"
+                                    android:textColor="#333333"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvComplementTargetName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:ellipsize="end"
+                                    android:fontFamily="@font/puritan_bold"
+                                    android:maxLines="1"
+                                    android:textColor="#000000"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvComplementTargetHex"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="11sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                                <TextView
+                                    android:id="@+id/tvComplementTargetRgb"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="11sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                            </LinearLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Triadic Harmony Section -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:fontFamily="@font/puritan_bold"
+                        android:text="TRIADIC HARMONY"
+                        android:textColor="#8E8E93"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <!-- Triadic 1 -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardTriadic1"
+                            android:layout_width="0dp"
+                            android:layout_height="80dp"
+                            android:layout_marginEnd="4dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:id="@+id/tvTriadic1Hex"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#000000"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                                <TextView
+                                    android:id="@+id/tvTriadic1Rgb"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="9sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                            </LinearLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Triadic 2 -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardTriadic2"
+                            android:layout_width="0dp"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginEnd="4dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:id="@+id/tvTriadic2Hex"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#000000"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                                <TextView
+                                    android:id="@+id/tvTriadic2Rgb"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="9sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                            </LinearLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Triadic 3 -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardTriadic3"
+                            android:layout_width="0dp"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:id="@+id/tvTriadic3Hex"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#000000"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                                <TextView
+                                    android:id="@+id/tvTriadic3Rgb"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/roboto_mono_regular"
+                                    android:textColor="#333333"
+                                    android:textSize="9sp"
+                                    app:fontFamily="@font/roboto_mono_regular" />
+
+                            </LinearLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Similar Colors Section -->
+                    <TextView
+                        android:id="@+id/tvSimilarColorsTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:fontFamily="@font/puritan_bold"
+                        android:text="SIMILAR COLORS"
+                        android:textColor="#8E8E93"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSimilarColors"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:nestedScrollingEnabled="false"
+                        tools:listitem="@layout/item_similar_color" />
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+        </FrameLayout>
+
+        <!-- Ad Container -->
+        <FrameLayout
+            android:id="@+id/adViewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
 
 </FrameLayout>

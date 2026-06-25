@@ -59,6 +59,41 @@ class ColorRepository private constructor(private val context: Context) {
         return Triple(r, g, b)
     }
 
+    fun searchByName(query: String): List<ColorItem> {
+        if (colorList.isEmpty()) return emptyList()
+        val cleanQuery = query.lowercase().trim()
+        val matches = colorList.filter { it.name.lowercase().contains(cleanQuery) }
+        return matches.sortedWith(compareBy(
+            { !it.name.lowercase().equals(cleanQuery) },
+            { !it.name.lowercase().startsWith(cleanQuery) },
+            { it.name.length }
+        ))
+    }
+
+    fun findClosestColors(targetColorInt: Int, limit: Int = 10): List<ColorItem> {
+        if (colorList.isEmpty()) return emptyList()
+
+        val targetR = android.graphics.Color.red(targetColorInt)
+        val targetG = android.graphics.Color.green(targetColorInt)
+        val targetB = android.graphics.Color.blue(targetColorInt)
+
+        return colorList.map { color ->
+            val currentRgb = hexToRgb(color.hex)
+            val distance = if (currentRgb != null) {
+                sqrt(
+                    (targetR - currentRgb.first).toDouble().pow(2.0) +
+                    (targetG - currentRgb.second).toDouble().pow(2.0) +
+                    (targetB - currentRgb.third).toDouble().pow(2.0)
+                )
+            } else {
+                Double.MAX_VALUE
+            }
+            Pair(color, distance)
+        }.sortedBy { it.second }
+            .map { it.first }
+            .take(limit)
+    }
+
     companion object {
         @SuppressLint("StaticFieldLeak")
         @Volatile

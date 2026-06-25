@@ -17,6 +17,8 @@ object AdHelper {
     private var isAdLoading = false
     private var mAppOpenAd: AppOpenAd? = null
     private var isAppOpenAdLoading = false
+    private var mLastAdShowTime = 0L
+    private const val MIN_SHOW_INTERVAL = 30000L // 30 seconds interval
 
     fun loadBannerAd(container: android.view.ViewGroup) {
         val context = container.context
@@ -54,8 +56,10 @@ object AdHelper {
     }
 
     fun showInterstitialAd(activity: Activity, onAdDismissed: () -> Unit) {
+        val currentTime = System.currentTimeMillis()
         val ad = mInterstitialAd
-        if (ad != null) {
+        if (ad != null && (currentTime - mLastAdShowTime >= MIN_SHOW_INTERVAL)) {
+            mLastAdShowTime = currentTime
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     mInterstitialAd = null
@@ -70,7 +74,9 @@ object AdHelper {
             }
             ad.show(activity)
         } else {
-            preloadInterstitialAd(activity)
+            if (ad == null) {
+                preloadInterstitialAd(activity)
+            }
             onAdDismissed()
         }
     }
