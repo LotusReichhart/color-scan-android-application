@@ -33,13 +33,13 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
             }
             is ScanUiEvent.ZoomIn -> {
                 _uiState.update { 
-                    val newZoom = min(4.0f, ((it.zoomRatio + 0.1f) * 10f).roundToInt() / 10f)
+                    val newZoom = min(4.0f, ((it.zoomRatio + 0.5f) * 10f).roundToInt() / 10f)
                     it.copy(zoomRatio = newZoom)
                 }
             }
             is ScanUiEvent.ZoomOut -> {
                 _uiState.update { 
-                    val newZoom = max(1.0f, ((it.zoomRatio - 0.1f) * 10f).roundToInt() / 10f)
+                    val newZoom = max(1.0f, ((it.zoomRatio - 0.5f) * 10f).roundToInt() / 10f)
                     it.copy(zoomRatio = newZoom)
                 }
             }

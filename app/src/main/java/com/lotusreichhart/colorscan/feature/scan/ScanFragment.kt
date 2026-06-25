@@ -63,7 +63,7 @@ class ScanFragment : Fragment() {
         return binding.root
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -134,6 +134,23 @@ class ScanFragment : Fragment() {
                     binding.tvColorRgb.text = "RGB: ${state.colorRgb}"
                     updateColorPreview(state.colorHex)
                 }
+            }
+        }
+
+        binding.previewView.setOnTouchListener { view, event ->
+            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                camera?.let { cam ->
+                    val factory = binding.previewView.meteringPointFactory
+                    val point = factory.createPoint(event.x, event.y)
+                    val action = androidx.camera.core.FocusMeteringAction.Builder(point, androidx.camera.core.FocusMeteringAction.FLAG_AF)
+                        .setAutoCancelDuration(2, java.util.concurrent.TimeUnit.SECONDS)
+                        .build()
+                    cam.cameraControl.startFocusAndMetering(action)
+                }
+                view.performClick()
+                true
+            } else {
+                false
             }
         }
 
