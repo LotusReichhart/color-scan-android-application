@@ -1,12 +1,15 @@
 package com.lotusreichhart.colorscan.feature.settings
 
+import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
+import com.android.billingclient.api.ProductDetails
 import com.lotusreichhart.colorscan.BuildConfig
 import com.lotusreichhart.colorscan.core.data.BillingManager
 import com.lotusreichhart.colorscan.databinding.ActivityPaywallBinding
@@ -17,10 +20,17 @@ import timber.log.Timber
 class PaywallActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPaywallBinding
-    private var selectedProductId = "premium_yearly"
+    private val viewModel: PaywallViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val billingManager = BillingManager.getInstance(this)
+        if (billingManager.activeProductId.value == "premium_lifetime") {
+            finish()
+            return
+        }
+
         binding = ActivityPaywallBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -39,28 +49,24 @@ class PaywallActivity : AppCompatActivity() {
         }
 
         binding.cardMonthly.setOnClickListener {
-            selectedProductId = "premium_monthly"
-            updateSelectionUI()
+            viewModel.selectProduct("premium_monthly")
         }
 
         binding.cardYearly.setOnClickListener {
-            selectedProductId = "premium_yearly"
-            updateSelectionUI()
+            viewModel.selectProduct("premium_yearly")
         }
 
         binding.cardLifetime.setOnClickListener {
-            selectedProductId = "premium_lifetime"
-            updateSelectionUI()
+            viewModel.selectProduct("premium_lifetime")
         }
 
         binding.btnSubscribeAction.setOnClickListener {
-            launchPurchaseFlow()
+            viewModel.launchPurchaseFlow()
         }
 
         binding.btnRestore.setOnClickListener {
             Toast.makeText(this, "Restoring purchases...", Toast.LENGTH_SHORT).show()
-            val billingManager = BillingManager.getInstance(this)
-            billingManager.queryPurchases()
+            viewModel.queryPurchases()
         }
 
         binding.btnTerms.setOnClickListener { v ->
@@ -79,91 +85,115 @@ class PaywallActivity : AppCompatActivity() {
     }
 
     private fun setupBillingObservers() {
-        val billingManager = BillingManager.getInstance(this)
-
         lifecycleScope.launch {
-            billingManager.isProUser.collect { isPro ->
-                if (isPro) {
-                    Toast.makeText(this@PaywallActivity, "Color Scan PRO Unlocked!", Toast.LENGTH_LONG).show()
+            viewModel.activeProductId.collect { activeId ->
+                if (activeId == "premium_lifetime") {
                     finish()
+                    return@collect
                 }
+                updateSelectionUI()
+                updateProductPricesUI(viewModel.productDetailsList.value, activeId)
             }
         }
 
         lifecycleScope.launch {
-            billingManager.productDetailsList.collectLatest { detailsList ->
-                if (detailsList.isNotEmpty()) {
-                    val monthlyProduct = detailsList.find { it.productId == "premium_monthly" }
-                    val yearlyProduct = detailsList.find { it.productId == "premium_yearly" }
-                    val lifetimeProduct = detailsList.find { it.productId == "premium_lifetime" }
+            viewModel.selectedProductId.collect {
+                updateSelectionUI()
+            }
+        }
 
-                    monthlyProduct?.let { product ->
-                        val offer = product.subscriptionOfferDetails?.firstOrNull()
-                        val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
-                        if (price != null) {
-                            binding.tvPriceMonthly.text = price
-                        }
+        lifecycleScope.launch {
+            viewModel.productDetailsList.collectLatest { detailsList ->
+                updateProductPricesUI(detailsList, viewModel.activeProductId.value)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.uiEvent.collect { event ->
+                when (event) {
+                    is PaywallUiEvent.LaunchBillingFlow -> {
+                        val billingManager = BillingManager.getInstance(this@PaywallActivity)
+                        billingManager.launchBillingFlow(this@PaywallActivity, event.productDetails)
                     }
-
-                    yearlyProduct?.let { product ->
-                        val offer = product.subscriptionOfferDetails?.firstOrNull()
-                        val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
-                        if (price != null) {
-                            binding.tvPriceYearly.text = price
-                        }
+                    is PaywallUiEvent.PurchaseSuccess -> {
+                        Toast.makeText(this@PaywallActivity, "Color Scan PRO Unlocked!", Toast.LENGTH_LONG).show()
+                        finish()
                     }
-
-                    lifetimeProduct?.let { product ->
-                        val price = product.oneTimePurchaseOfferDetails?.formattedPrice
-                        if (price != null) {
-                            binding.tvPriceLifetime.text = price
-                        }
+                    is PaywallUiEvent.ShowError -> {
+                        Toast.makeText(this@PaywallActivity, event.message, Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
 
-    private fun updateSelectionUI() {
-        val selectedStrokeColor = Color.parseColor("#FFB300")
-        val defaultStrokeColor = Color.parseColor("#2C2C2E")
+    private fun updateProductPricesUI(detailsList: List<ProductDetails>, activeId: String?) {
+        if (detailsList.isNotEmpty()) {
+            val monthlyProduct = detailsList.find { it.productId == "premium_monthly" }
+            val yearlyProduct = detailsList.find { it.productId == "premium_yearly" }
+            val lifetimeProduct = detailsList.find { it.productId == "premium_lifetime" }
 
-        binding.cardMonthly.strokeColor = if (selectedProductId == "premium_monthly") selectedStrokeColor else defaultStrokeColor
-        binding.cardMonthly.strokeWidth = if (selectedProductId == "premium_monthly") dpToPx(2) else dpToPx(1)
+            monthlyProduct?.let { product ->
+                val offer = product.subscriptionOfferDetails?.firstOrNull()
+                val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
+                if (price != null) {
+                    binding.tvPriceMonthly.text = if (activeId == "premium_monthly") "$price (Active)" else price
+                }
+            }
 
-        binding.cardYearly.strokeColor = if (selectedProductId == "premium_yearly") selectedStrokeColor else defaultStrokeColor
-        binding.cardYearly.strokeWidth = if (selectedProductId == "premium_yearly") dpToPx(2) else dpToPx(1)
+            yearlyProduct?.let { product ->
+                val offer = product.subscriptionOfferDetails?.firstOrNull()
+                val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
+                if (price != null) {
+                    binding.tvPriceYearly.text = if (activeId == "premium_yearly") "$price (Active)" else price
+                }
+            }
 
-        binding.cardLifetime.strokeColor = if (selectedProductId == "premium_lifetime") selectedStrokeColor else defaultStrokeColor
-        binding.cardLifetime.strokeWidth = if (selectedProductId == "premium_lifetime") dpToPx(2) else dpToPx(1)
-
-        binding.btnSubscribeAction.text = when (selectedProductId) {
-            "premium_yearly" -> "Start 3-Day Free Trial"
-            "premium_monthly" -> "Subscribe Now"
-            "premium_lifetime" -> "Unlock Lifetime Pro"
-            else -> "Subscribe Now"
+            lifetimeProduct?.let { product ->
+                val price = product.oneTimePurchaseOfferDetails?.formattedPrice
+                if (price != null) {
+                    binding.tvPriceLifetime.text = if (activeId == "premium_lifetime") "$price (Active)" else price
+                }
+            }
         }
     }
 
-    private fun launchPurchaseFlow() {
-        val billingManager = BillingManager.getInstance(this)
-        val detailsList = billingManager.productDetailsList.value
-        val productDetails = detailsList.find { it.productId == selectedProductId }
+    @SuppressLint("SetTextI18n")
+    private fun updateSelectionUI() {
+        val selectedId = viewModel.selectedProductId.value
+        val activeId = viewModel.activeProductId.value
 
-        if (productDetails != null) {
-            billingManager.launchBillingFlow(this, productDetails)
+        val selectedStrokeColor = "#FFB300".toColorInt()
+        val defaultStrokeColor = "#2C2C2E".toColorInt()
+
+        binding.cardMonthly.strokeColor = if (selectedId == "premium_monthly") selectedStrokeColor else defaultStrokeColor
+        binding.cardMonthly.strokeWidth = if (selectedId == "premium_monthly") dpToPx(2) else dpToPx(1)
+
+        binding.cardYearly.strokeColor = if (selectedId == "premium_yearly") selectedStrokeColor else defaultStrokeColor
+        binding.cardYearly.strokeWidth = if (selectedId == "premium_yearly") dpToPx(2) else dpToPx(1)
+
+        binding.cardLifetime.strokeColor = if (selectedId == "premium_lifetime") selectedStrokeColor else defaultStrokeColor
+        binding.cardLifetime.strokeWidth = if (selectedId == "premium_lifetime") dpToPx(2) else dpToPx(1)
+
+        if (selectedId == activeId) {
+            binding.btnSubscribeAction.text = "Current Plan"
+            binding.btnSubscribeAction.isEnabled = false
+            binding.btnSubscribeAction.alpha = 0.5f
         } else {
-            Toast.makeText(
-                this,
-                "Unable to connect to Google Play. Using offline mode or Play Store is not configured.",
-                Toast.LENGTH_LONG
-            ).show()
+            binding.btnSubscribeAction.isEnabled = true
+            binding.btnSubscribeAction.alpha = 1.0f
+            binding.btnSubscribeAction.text = when (selectedId) {
+                "premium_yearly" -> "Start 3-Day Free Trial"
+                "premium_monthly" -> "Subscribe Now"
+                "premium_lifetime" -> "Unlock Lifetime Pro"
+                else -> "Subscribe Now"
+            }
         }
     }
 
     private fun openWebUrl(url: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
         } catch (e: Exception) {
             Timber.e(e)
