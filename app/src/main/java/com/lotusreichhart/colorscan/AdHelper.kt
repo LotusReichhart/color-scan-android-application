@@ -4,12 +4,14 @@ import android.app.Activity
 import android.content.Context
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.appopen.AppOpenAd
+import com.lotusreichhart.colorscan.core.data.BillingManager
 
 object AdHelper {
 
@@ -22,7 +24,7 @@ object AdHelper {
 
     fun loadBannerAd(container: android.view.ViewGroup) {
         val context = container.context
-        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(context)
+        val billingManager = BillingManager.getInstance(context)
         if (billingManager.isProUser.value) {
             container.visibility = android.view.View.GONE
             return
@@ -30,15 +32,43 @@ object AdHelper {
         container.visibility = android.view.View.VISIBLE
         val adView = AdView(context)
         adView.adUnitId = BuildConfig.BANNER_AD_ID
-        adView.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
+        
+        val activity = getActivity(context)
+        val adSize = if (activity != null) {
+            val display = activity.windowManager.defaultDisplay
+            val outMetrics = android.util.DisplayMetrics()
+            display.getMetrics(outMetrics)
+            val density = outMetrics.density
+            var adWidthPixels = container.width.toFloat()
+            if (adWidthPixels == 0f) {
+                adWidthPixels = outMetrics.widthPixels.toFloat()
+            }
+            val adWidth = (adWidthPixels / density).toInt()
+            AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth)
+        } else {
+            AdSize.BANNER
+        }
+
+        adView.setAdSize(adSize)
         container.removeAllViews()
         container.addView(adView)
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
     }
 
+    private fun getActivity(context: Context): Activity? {
+        var ctx = context
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is Activity) {
+                return ctx
+            }
+            ctx = ctx.baseContext
+        }
+        return ctx as? Activity
+    }
+
     fun preloadInterstitialAd(context: Context) {
-        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(context)
+        val billingManager = BillingManager.getInstance(context)
         if (billingManager.isProUser.value) return
         if (mInterstitialAd != null || isAdLoading) return
 
@@ -64,7 +94,7 @@ object AdHelper {
     }
 
     fun showInterstitialAd(activity: Activity, onAdDismissed: () -> Unit) {
-        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(activity)
+        val billingManager = BillingManager.getInstance(activity)
         if (billingManager.isProUser.value) {
             onAdDismissed()
             return
@@ -95,7 +125,7 @@ object AdHelper {
     }
 
     fun loadAppOpenAd(context: Context) {
-        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(context)
+        val billingManager = BillingManager.getInstance(context)
         if (billingManager.isProUser.value) return
         if (mAppOpenAd != null || isAppOpenAdLoading) return
 
@@ -120,7 +150,7 @@ object AdHelper {
     }
 
     fun showAppOpenAd(activity: Activity, onAdDismissed: () -> Unit) {
-        val billingManager = com.lotusreichhart.colorscan.core.data.BillingManager.getInstance(activity)
+        val billingManager = BillingManager.getInstance(activity)
         if (billingManager.isProUser.value) {
             onAdDismissed()
             return

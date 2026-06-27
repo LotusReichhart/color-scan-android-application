@@ -14,7 +14,11 @@ class BillingManager private constructor(context: Context) : PurchasesUpdatedLis
 
     private val billingClient = BillingClient.newBuilder(context.applicationContext)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .build()
+        )
         .build()
 
     private val _isProUser = MutableStateFlow(false)
@@ -117,11 +121,12 @@ class BillingManager private constructor(context: Context) : PurchasesUpdatedLis
                     else -> purchasedProductIds.firstOrNull()
                 }
 
-                val activeSubToken = if (activeId == "premium_monthly" || activeId == "premium_yearly") {
-                    purchaseTokenMap[activeId]
-                } else {
-                    null
-                }
+                val activeSubToken =
+                    if (activeId == "premium_monthly" || activeId == "premium_yearly") {
+                        purchaseTokenMap[activeId]
+                    } else {
+                        null
+                    }
 
                 _isProUser.value = isPro
                 _activeProductId.value = activeId
@@ -157,30 +162,44 @@ class BillingManager private constructor(context: Context) : PurchasesUpdatedLis
             .setProductList(subsProducts)
             .build()
 
-        billingClient.queryProductDetailsAsync(subsParams) { billingResult, productDetailsList ->
-            Timber.d("Query SUBS Callback: responseCode=${billingResult.responseCode}, debugMessage=${billingResult.debugMessage}, count=${productDetailsList.size}")
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                tempCombinedList.addAll(productDetailsList)
-                _productDetailsList.value = tempCombinedList.toList()
-            } else {
-                Timber.e("Query SUBS Failed: responseCode=${billingResult.responseCode}, message=${billingResult.debugMessage}")
-            }
-
-            // 2. Query INAPP Products
-            val inappParams = QueryProductDetailsParams.newBuilder()
-                .setProductList(inappProducts)
-                .build()
-
-            billingClient.queryProductDetailsAsync(inappParams) { inappResult, inappDetailsList ->
-                Timber.d("Query INAPP Callback: responseCode=${inappResult.responseCode}, debugMessage=${inappResult.debugMessage}, count=${inappDetailsList.size}")
-                if (inappResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    tempCombinedList.addAll(inappDetailsList)
+        billingClient.queryProductDetailsAsync(subsParams, object : ProductDetailsResponseListener {
+            override fun onProductDetailsResponse(
+                billingResult: BillingResult,
+                result: QueryProductDetailsResult
+            ) {
+                val productDetailsList = result.productDetailsList ?: emptyList()
+                Timber.d("Query SUBS Callback: responseCode=${billingResult.responseCode}, debugMessage=${billingResult.debugMessage}, count=${productDetailsList.size}")
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    tempCombinedList.addAll(productDetailsList)
                     _productDetailsList.value = tempCombinedList.toList()
                 } else {
-                    Timber.e("Query INAPP Failed: responseCode=${inappResult.responseCode}, message=${inappResult.debugMessage}")
+                    Timber.e("Query SUBS Failed: responseCode=${billingResult.responseCode}, message=${billingResult.debugMessage}")
                 }
+
+                // 2. Query INAPP Products
+                val inappParams = QueryProductDetailsParams.newBuilder()
+                    .setProductList(inappProducts)
+                    .build()
+
+                billingClient.queryProductDetailsAsync(
+                    inappParams,
+                    object : ProductDetailsResponseListener {
+                        override fun onProductDetailsResponse(
+                            inappResult: BillingResult,
+                            inappResultObj: QueryProductDetailsResult
+                        ) {
+                            val inappDetailsList = inappResultObj.productDetailsList ?: emptyList()
+                            Timber.d("Query INAPP Callback: responseCode=${inappResult.responseCode}, debugMessage=${inappResult.debugMessage}, count=${inappDetailsList.size}")
+                            if (inappResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                                tempCombinedList.addAll(inappDetailsList)
+                                _productDetailsList.value = tempCombinedList.toList()
+                            } else {
+                                Timber.e("Query INAPP Failed: responseCode=${inappResult.responseCode}, message=${inappResult.debugMessage}")
+                            }
+                        }
+                    })
             }
-        }
+        })
     }
 
     fun launchBillingFlow(activity: Activity, productDetails: ProductDetails) {

@@ -148,7 +148,8 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.play.services.ads)
-    implementation("com.android.billingclient:billing-ktx:6.2.1")
+    implementation(libs.billing.ktx)
+    implementation(libs.app.update.ktx)
     implementation(libs.gson)
 
     implementation(libs.androidx.room.runtime)

@@ -15,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
@@ -24,6 +26,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.lotusreichhart.colorscan.R
+import com.lotusreichhart.colorscan.AdHelper
 import com.lotusreichhart.colorscan.core.util.ColorConverter
 import com.lotusreichhart.colorscan.databinding.FragmentScanBinding
 import kotlinx.coroutines.launch
@@ -44,6 +47,7 @@ class ScanFragment : Fragment() {
     private var camera: Camera? = null
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var hasRequestedPermission = false
+    private var imageCapture: ImageCapture? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -70,7 +74,21 @@ class ScanFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnFreeze.setOnClickListener {
-            viewModel.onEvent(ScanUiEvent.ToggleFreeze)
+            val state = viewModel.uiState.value
+            if (state.isFrozen) {
+                // Currently frozen -> Unfreezing
+                binding.ivFrozenPhoto.visibility = View.GONE
+                binding.ivFrozenPhoto.setImageDrawable(null)
+                val tempFile = java.io.File(requireContext().cacheDir, "temp_frozen.jpg")
+                if (tempFile.exists()) {
+                    tempFile.delete()
+                }
+                viewModel.onEvent(ScanUiEvent.ToggleFreeze)
+            } else {
+                // Currently active -> Freezing
+                viewModel.onEvent(ScanUiEvent.ToggleFreeze)
+                captureTempFrozenPhoto()
+            }
         }
 
         binding.btnFlash.setOnClickListener {
@@ -85,34 +103,38 @@ class ScanFragment : Fragment() {
             viewModel.onEvent(ScanUiEvent.ZoomOut)
         }
 
-        binding.btnCopy.setOnClickListener { view ->
-            val popup = androidx.appcompat.widget.PopupMenu(requireContext(), view)
-            popup.menu.add(0, 1, 0, "Copy Name")
-            popup.menu.add(0, 2, 0, "Copy HEX")
-            popup.menu.add(0, 3, 0, "Copy RGB")
-            popup.setOnMenuItemClickListener { item ->
-                val state = viewModel.uiState.value
-                val copied = when (item.itemId) {
-                    1 -> {
+        binding.btnCopy.setOnClickListener {
+            val state = viewModel.uiState.value
+            val bottomSheet = ActionBottomSheet.newInstance(
+                colorName = state.colorName,
+                hex = state.colorHex,
+                rgb = state.colorRgb,
+                showSavePhoto = state.isFrozen
+            )
+            bottomSheet.setOnActionSelectedListener { actionType ->
+                when (actionType) {
+                    ActionType.COPY_NAME -> {
                         copyToClipboard("Name", state.colorName)
-                        true
+                        viewModel.onEvent(ScanUiEvent.SaveColor)
+                        AdHelper.showInterstitialAd(requireActivity()) {}
                     }
-                    2 -> {
+                    ActionType.COPY_HEX -> {
                         copyToClipboard("HEX", state.colorHex)
-                        true
+                        viewModel.onEvent(ScanUiEvent.SaveColor)
+                        AdHelper.showInterstitialAd(requireActivity()) {}
                     }
-                    3 -> {
+                    ActionType.COPY_RGB -> {
                         copyToClipboard("RGB", state.colorRgb)
-                        true
+                        viewModel.onEvent(ScanUiEvent.SaveColor)
+                        AdHelper.showInterstitialAd(requireActivity()) {}
                     }
-                    else -> false
+                    ActionType.SAVE_PHOTO -> {
+                        saveFrozenPhotoPermanently(state.colorName, state.colorHex, state.colorRgb)
+                        AdHelper.showInterstitialAd(requireActivity()) {}
+                    }
                 }
-                if (copied) {
-                    viewModel.onEvent(ScanUiEvent.SaveColor)
-                }
-                true
             }
-            popup.show()
+            bottomSheet.show(parentFragmentManager, "ActionBottomSheet")
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -121,6 +143,11 @@ class ScanFragment : Fragment() {
                     binding.btnFreeze.isSelected = state.isFrozen
                     binding.scanGrid.isSelected = state.isFrozen
                     binding.badgeFrozen.visibility = if (state.isFrozen) View.VISIBLE else View.GONE
+
+                    if (!state.isFrozen) {
+                        binding.ivFrozenPhoto.visibility = View.GONE
+                        binding.ivFrozenPhoto.setImageDrawable(null)
+                    }
 
                     binding.btnFlash.setImageResource(
                         if (state.isFlashOn) R.drawable.ic_flash_on else R.drawable.ic_flash_off
@@ -183,6 +210,12 @@ class ScanFragment : Fragment() {
             val preview = Preview.Builder().build().also {
                 it.surfaceProvider = binding.previewView.surfaceProvider
             }
+
+            val imageCapture = ImageCapture.Builder()
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .build()
+            this@ScanFragment.imageCapture = imageCapture
+
             var lastAnalysisTime = 0L
             val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -209,7 +242,7 @@ class ScanFragment : Fragment() {
             try {
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(
-                    viewLifecycleOwner, cameraSelector, preview, imageAnalysis
+                    viewLifecycleOwner, cameraSelector, preview, imageAnalysis, imageCapture
                 )
                 applyCameraState()
             } catch (exc: Exception) {
@@ -222,6 +255,156 @@ class ScanFragment : Fragment() {
         val state = viewModel.uiState.value
         camera?.cameraControl?.enableTorch(state.isFlashOn)
         camera?.cameraControl?.setZoomRatio(state.zoomRatio)
+    }
+
+    private fun captureTempFrozenPhoto() {
+        val imageCapture = imageCapture ?: return
+        val tempFile = java.io.File(requireContext().cacheDir, "temp_frozen.jpg")
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(tempFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(requireContext()),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    if (_binding == null) return
+                    overlayTargetPoint(tempFile)
+                    
+                    binding.ivFrozenPhoto.setImageURI(null)
+                    binding.ivFrozenPhoto.setImageURI(Uri.fromFile(tempFile))
+                    binding.ivFrozenPhoto.visibility = View.VISIBLE
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    Timber.e(exception, "Failed to capture temp frozen photo")
+                }
+            }
+        )
+    }
+
+    private fun saveFrozenPhotoPermanently(colorName: String, colorHex: String, colorRgb: String) {
+        val tempFile = java.io.File(requireContext().cacheDir, "temp_frozen.jpg")
+        if (!tempFile.exists()) {
+            Toast.makeText(requireContext(), "Frozen photo not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val filename = "color_scan_${System.currentTimeMillis()}.jpg"
+        val permanentFile = java.io.File(requireContext().filesDir, filename)
+
+        try {
+            tempFile.copyTo(permanentFile, overwrite = true)
+
+            viewModel.saveColorWithPhoto(colorHex, colorName, colorRgb, permanentFile.absolutePath)
+            Toast.makeText(
+                requireContext(),
+                "Successfully saved photo and color to History!",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            // Automatically clean up and unfreeze
+            binding.ivFrozenPhoto.visibility = View.GONE
+            binding.ivFrozenPhoto.setImageDrawable(null)
+            tempFile.delete()
+            viewModel.onEvent(ScanUiEvent.ToggleFreeze)
+        } catch (e: Exception) {
+            Timber.e(e, "Error saving frozen photo permanently")
+            Toast.makeText(requireContext(), "Failed to save photo", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun overlayTargetPoint(file: java.io.File) {
+        try {
+            // Read orientation metadata using built-in ExifInterface
+            val exif = android.media.ExifInterface(file.absolutePath)
+            val orientation = exif.getAttributeInt(
+                android.media.ExifInterface.TAG_ORIENTATION,
+                android.media.ExifInterface.ORIENTATION_NORMAL
+            )
+            val rotationDegrees = when (orientation) {
+                android.media.ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                android.media.ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                android.media.ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                else -> 0
+            }
+
+            val bitmap = android.graphics.BitmapFactory.decodeFile(file.absolutePath)
+            if (bitmap == null) return
+
+            // Rotate bitmap if necessary
+            val workingBitmap = if (rotationDegrees != 0) {
+                val matrix = android.graphics.Matrix()
+                matrix.postRotate(rotationDegrees.toFloat())
+                val rotated = android.graphics.Bitmap.createBitmap(
+                    bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+                )
+                bitmap.recycle()
+                rotated
+            } else {
+                bitmap
+            }
+
+            // Crop to center-square (1:1 ratio) matching the visible preview screen
+            val width = workingBitmap.width
+            val height = workingBitmap.height
+            val squareSize = Math.min(width, height)
+            val x = (width - squareSize) / 2
+            val y = (height - squareSize) / 2
+
+            val croppedBitmap = android.graphics.Bitmap.createBitmap(
+                workingBitmap, x, y, squareSize, squareSize
+            )
+            workingBitmap.recycle()
+
+            val mutableBitmap = croppedBitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, true)
+            croppedBitmap.recycle()
+
+            val canvas = android.graphics.Canvas(mutableBitmap)
+            val scale = mutableBitmap.width / 1080f
+
+            val centerX = mutableBitmap.width / 2f
+            val centerY = mutableBitmap.height / 2f
+            val lineLength = 30f * scale
+            val circleRadius = 12f * scale
+
+            // 1. Draw black background reticle (slightly thicker stroke for shadow/contrast)
+            val shadowPaint = android.graphics.Paint().apply {
+                color = android.graphics.Color.BLACK
+                strokeWidth = 6f * scale
+                style = android.graphics.Paint.Style.STROKE
+                isAntiAlias = true
+            }
+            canvas.drawLine(centerX - lineLength, centerY, centerX + lineLength, centerY, shadowPaint)
+            canvas.drawLine(centerX, centerY - lineLength, centerX, centerY + lineLength, shadowPaint)
+            canvas.drawCircle(centerX, centerY, circleRadius, shadowPaint)
+
+            // 2. Draw white foreground reticle (thinner stroke overlayed)
+            val paint = android.graphics.Paint().apply {
+                color = android.graphics.Color.WHITE
+                strokeWidth = 3f * scale
+                style = android.graphics.Paint.Style.STROKE
+                isAntiAlias = true
+            }
+            canvas.drawLine(centerX - lineLength, centerY, centerX + lineLength, centerY, paint)
+            canvas.drawLine(centerX, centerY - lineLength, centerX, centerY + lineLength, paint)
+            canvas.drawCircle(centerX, centerY, circleRadius, paint)
+
+            java.io.FileOutputStream(file).use { out ->
+                mutableBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
+            }
+            mutableBitmap.recycle()
+
+            // Reset EXIF orientation back to normal since we physically rotated the pixels
+            val newExif = android.media.ExifInterface(file.absolutePath)
+            newExif.setAttribute(
+                android.media.ExifInterface.TAG_ORIENTATION,
+                android.media.ExifInterface.ORIENTATION_NORMAL.toString()
+            )
+            newExif.saveAttributes()
+
+        } catch (e: Exception) {
+            Timber.e(e, "Error overlaying target point on captured photo")
+        }
     }
 
     private fun updateColorPreview(colorHex: String) {
