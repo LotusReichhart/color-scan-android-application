@@ -49,6 +49,12 @@
             android:windowSoftInputMode="adjustPan"
             tools:ignore="LockedOrientationActivity" />
 
+        <activity
+            android:name=".feature.history.PhotoDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ColorScan" />
+
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />

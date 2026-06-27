@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:paddingBottom="24dp">
+
+    <!-- Drag Handle Bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="#444444" />
+
+    <!-- Copy Color Name -->
+    <TextView
+        android:id="@+id/btnCopyName"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:fontFamily="@font/roboto_mono_regular"
+        android:text="Copy Color Name"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    <!-- Copy HEX -->
+    <TextView
+        android:id="@+id/btnCopyHex"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:fontFamily="@font/roboto_mono_regular"
+        android:text="Copy HEX"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    <!-- Copy RGB -->
+    <TextView
+        android:id="@+id/btnCopyRgb"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:fontFamily="@font/roboto_mono_regular"
+        android:text="Copy RGB"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    <!-- Save Photo & Color -->
+    <TextView
+        android:id="@+id/btnSavePhoto"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:fontFamily="@font/roboto_mono_regular"
+        android:text="Save Photo &amp; Color"
+        android:textColor="#10B981"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <!-- Divider Line -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginVertical="8dp"
+        android:background="#222222" />
+
+    <!-- Cancel -->
+    <TextView
+        android:id="@+id/btnCancel"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:fontFamily="@font/roboto_mono_regular"
+        android:text="Cancel"
+        android:textColor="#FF453A"
+        android:textSize="16sp" />
+
+</LinearLayout>

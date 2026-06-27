@@ -60,6 +60,16 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun saveColorWithPhoto(hex: String, name: String, rgb: String, imagePath: String) {
+        viewModelScope.launch {
+            try {
+                historyRepository.saveColorWithPhoto(hex, name, rgb, imagePath)
+            } catch (e: Exception) {
+                Timber.e(e, "Error saving color history with photo")
+            }
+        }
+    }
+
     fun updateScannedColor(hex: String, rgb: String) {
         if (_uiState.value.isFrozen) return
         

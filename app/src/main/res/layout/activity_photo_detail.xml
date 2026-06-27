@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0A0A">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top Header Navigation -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
+
+            <ImageButton
+                android:id="@+id/btnClose"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Close screen"
+                android:src="@drawable/ic_clear"
+                app:tint="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:fontFamily="@font/puritan_bold"
+                android:text="PHOTO DETAIL"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <!-- Main Image View Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="1">
+
+            <com.lotusreichhart.colorscan.feature.history.ZoomableImageView
+                android:id="@+id/ivDetailPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="matrix" />
+        </FrameLayout>
+
+        <!-- Color Details Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#161616"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#2C2C2E"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <!-- Color Preview Circle -->
+                    <View
+                        android:id="@+id/colorPreviewCircle"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true" />
+
+                    <!-- Color Name -->
+                    <TextView
+                        android:id="@+id/tvColorName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="12dp"
+                        android:layout_toStartOf="@id/btnCopyDetail"
+                        android:layout_toEndOf="@id/colorPreviewCircle"
+                        android:fontFamily="@font/roboto_mono_regular"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <!-- Copy Button in Detail -->
+                    <ImageButton
+                        android:id="@+id/btnCopyDetail"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Copy color"
+                        android:src="@drawable/ic_copy"
+                        app:tint="#FFFFFF" />
+                </RelativeLayout>
+
+                <!-- HEX & RGB values -->
+                <TextView
+                    android:id="@+id/tvColorHex"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+
+                    android:fontFamily="@font/roboto_mono_regular"
+                    android:textColor="#8E8E93"
+                    android:textSize="14sp"
+                    app:fontFamily="@font/roboto_mono_regular" />
+
+                <TextView
+                    android:id="@+id/tvColorRgb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/roboto_mono_regular"
+                    android:textColor="#8E8E93"
+                    android:textSize="14sp"
+                    app:fontFamily="@font/roboto_mono_regular" />
+
+                <!-- Saved Date/Time -->
+                <TextView
+                    android:id="@+id/tvTimestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="@font/roboto_mono_regular"
+                    android:textColor="#555555"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- AdMob Banner Container -->
+        <FrameLayout
+            android:id="@+id/adViewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
+
+</FrameLayout>

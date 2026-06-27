@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:fontFamily="@font/roboto_mono_regular"
             app:fontFamily="@font/roboto_mono_regular"
             android:text="0 COLORS SAVED"
@@ -60,35 +60,24 @@
             android:textSize="11sp"
             android:letterSpacing="0.1" />
 
-        <!-- RecyclerView for history list -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvHistory"
+        <!-- TabLayout for Tabs -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#121212"
+            app:tabIndicatorColor="#FFFFFF"
+            app:tabSelectedTextColor="#FFFFFF"
+            app:tabTextColor="#757575"
+            app:tabTextAppearance="@style/TabTextStyle"
+            app:tabIndicatorHeight="2dp" />
+
+        <!-- ViewPager2 for Fragments -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="16dp" />
-
-        <!-- Empty state placeholder -->
-        <LinearLayout
-            android:id="@+id/layoutEmpty"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_mono_regular"
-                android:text="NO SAVED COLORS"
-                android:textColor="#8E8E93"
-                android:textSize="16sp" />
-        </LinearLayout>
+            android:layout_weight="1" />
 
         <!-- AdMob Banner Container -->
         <FrameLayout
